@@ -1,35 +1,21 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+// app/(tabs)/_layout.tsx
+import { Slot } from "expo-router"; // ✅ renders the active page
+import React, { useState } from "react";
+import { View } from "react-native";
+import IPhoneSeBottomBar from "../../components/IPhoneSeBottomBar"; // ✅ move your bar here
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const [activeTab, setActiveTab] = useState<"home" | "wallet" | "profile">(
+    "home"
+  );
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1, backgroundColor: "#12151d" }}>
+      {/* This will render index.tsx, explore.tsx, etc */}
+      <Slot />
+
+      {/* Custom Bottom Navigation */}
+      <IPhoneSeBottomBar activeTab={activeTab} setActiveTab={setActiveTab} />
+    </View>
   );
 }

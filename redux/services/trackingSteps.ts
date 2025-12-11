@@ -1,7 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "../services/axiosBaseQuery";
-
-const BASE_URL = "http://localhost:4000/api";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 export interface StepLog {
   id: number;
@@ -12,20 +10,20 @@ export interface StepLog {
 
 export const stepsApi = createApi({
   reducerPath: "stepsApi",
-  baseQuery: axiosBaseQuery({ baseUrl: BASE_URL }),
+  baseQuery: axiosBaseQuery(),
   tagTypes: ["Steps"],
   endpoints: (builder) => ({
     getTodaySteps: builder.query<{ steps: number; target: number }, void>({
-      query: () => ({ url: "/steps/today", method: "GET" }),
+      query: () => ({ url: "/tracking/today", method: "GET" }),
       providesTags: ["Steps"],
     }),
     addSteps: builder.mutation<StepLog, { steps: number }>({
-      query: (body) => ({ url: "/steps", method: "POST", data: body }),
+      query: (body) => ({ url: "/tracking/add", method: "POST", data: body }),
       invalidatesTags: ["Steps"],
     }),
     getHistory: builder.query<StepLog[], { from?: string; to?: string } | void>(
       {
-        query: (params) => ({ url: "/steps", method: "GET", params }),
+        query: (params) => ({ url: "/tracking/list", method: "GET", params }),
         providesTags: ["Steps"],
       }
     ),

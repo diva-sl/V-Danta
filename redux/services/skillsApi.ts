@@ -1,7 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { axiosBaseQuery } from "../services/axiosBaseQuery";
-
-const BASE_URL = "http://localhost:4000/api";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 export interface SkillVideo {
   id: number;
@@ -11,17 +9,31 @@ export interface SkillVideo {
   durationSec?: number;
 }
 
-export const videosApi = createApi({
-  reducerPath: "videosApi",
-  baseQuery: axiosBaseQuery({ baseUrl: BASE_URL }),
+export const skillsApi = createApi({
+  reducerPath: "skillsApi",
+  baseQuery: axiosBaseQuery(), // ✅ baseURL already set in axiosBaseQuery
+  tagTypes: ["Skills"],
   endpoints: (builder) => ({
-    getWeeklyVideos: builder.query<
-      { week: number; videos: SkillVideo[] },
-      { week?: number } | void
-    >({
-      query: (params) => ({ url: "/videos/weekly", method: "GET", params }),
+    listSkills: builder.query<SkillVideo[], void>({
+      query: () => ({ url: "/skills", method: "GET" }),
+      providesTags: ["Skills"],
+    }),
+    addSkill: builder.mutation<SkillVideo, Partial<SkillVideo>>({
+      query: (body) => ({ url: "/skills", method: "POST", data: body }),
+      invalidatesTags: ["Skills"],
+    }),
+    completeSkill: builder.mutation<{ message: string }, { id: number }>({
+      query: ({ id }) => ({
+        url: `/skills/${id}/complete`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Skills"],
     }),
   }),
 });
 
-export const { useGetWeeklyVideosQuery } = videosApi;
+export const {
+  useListSkillsQuery,
+  useAddSkillMutation,
+  useCompleteSkillMutation,
+} = skillsApi;

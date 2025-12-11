@@ -2,16 +2,20 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
+    "jsx": "react",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
     "paths": {
       "@/*": ["./*"]
     }
   },
   "include": [
+    "declarations.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts",
-    "metro.config.js",
-    "declarations.d.ts" // ✅ add this line
+    "expo-env.d.ts"
   ]
 }

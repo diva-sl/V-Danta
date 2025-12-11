@@ -1,22 +1,31 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 
-const BASE_URL = "http://localhost:4000/api"; // change if device/emulator needs LAN IP
-
 export const userApi = createApi({
   reducerPath: "userApi",
-  baseQuery: axiosBaseQuery({ baseUrl: BASE_URL }),
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["User"],
   endpoints: (builder) => ({
+    register: builder.mutation<
+      { message: string; user?: any },
+      { name: string; email: string; password: string }
+    >({
+      query: (body) => ({ url: "/auth/register", method: "POST", data: body }),
+    }),
+
     login: builder.mutation<
       { token: string; user: any },
       { email: string; password: string }
     >({
       query: (body) => ({ url: "/auth/login", method: "POST", data: body }),
     }),
-    me: builder.query<any, void>({
-      query: () => ({ url: "/auth/me", method: "GET" }),
+
+    profile: builder.query<any, void>({
+      query: () => ({ url: "/auth/profile", method: "GET" }),
+      providesTags: ["User"],
     }),
   }),
 });
 
-export const { useLoginMutation, useMeQuery } = userApi;
+export const { useRegisterMutation, useLoginMutation, useProfileQuery } =
+  userApi;

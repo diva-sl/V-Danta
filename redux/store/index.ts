@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { videosApi } from "../services/skillsApi";
+import { skillsApi } from "../services/skillsApi";
 import { stepsApi } from "../services/trackingSteps";
 import { userApi } from "../services/userApi";
 import authReducer from "../slices/authSlice";
@@ -12,10 +12,10 @@ export const store = configureStore({
     steps: stepsReducer,
     [userApi.reducerPath]: userApi.reducer,
     [stepsApi.reducerPath]: stepsApi.reducer,
-    [videosApi.reducerPath]: videosApi.reducer,
+    [skillsApi.reducerPath]: skillsApi.reducer,
   },
   middleware: (gDM) =>
-    gDM().concat(userApi.middleware, stepsApi.middleware, videosApi.middleware),
+    gDM().concat(userApi.middleware, stepsApi.middleware, skillsApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

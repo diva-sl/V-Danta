@@ -14,6 +14,12 @@ export const skillsApi = createApi({
   baseQuery: axiosBaseQuery(), // ✅ baseURL already set in axiosBaseQuery
   tagTypes: ["Skills"],
   endpoints: (builder) => ({
+    getCourses: builder.query<any[], void>({
+      query: () => ({
+        url: "/skills/courses",
+        method: "GET",
+      }),
+    }),
     listSkills: builder.query<SkillVideo[], void>({
       query: () => ({ url: "/skills", method: "GET" }),
       providesTags: ["Skills"],
@@ -29,11 +35,19 @@ export const skillsApi = createApi({
       }),
       invalidatesTags: ["Skills"],
     }),
+    getCourseVideos: builder.query<any[], number>({
+      query: (courseId) => ({
+        url: `/skills/courses/${courseId}/videos`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
+  useGetCoursesQuery,
   useListSkillsQuery,
   useAddSkillMutation,
   useCompleteSkillMutation,
+  useGetCourseVideosQuery,
 } = skillsApi;

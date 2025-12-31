@@ -1,31 +1,33 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi } from "@reduxjs/toolkit/query/react";
+import { clearToken, setToken } from "../slices/authSlice";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ["User"],
   endpoints: (builder) => ({
-    register: builder.mutation<
-      { message: string; user?: any },
-      { name: string; email: string; password: string }
-    >({
-      query: (body) => ({ url: "/auth/register", method: "POST", data: body }),
+    login: builder.mutation({
+      query: (body) => ({
+        url: "/user/login",
+        method: "POST",
+        data: body,
+      }),
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+        await AsyncStorage.setItem("authToken", data.token);
+        dispatch(setToken(data.token));
+      },
     }),
 
-    login: builder.mutation<
-      { token: string; user: any },
-      { email: string; password: string }
-    >({
-      query: (body) => ({ url: "/auth/login", method: "POST", data: body }),
-    }),
-
-    profile: builder.query<any, void>({
-      query: () => ({ url: "/auth/profile", method: "GET" }),
-      providesTags: ["User"],
+    logout: builder.mutation({
+      queryFn: async (_, { dispatch }) => {
+        await AsyncStorage.removeItem("authToken");
+        dispatch(clearToken());
+        return { data: true };
+      },
     }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useProfileQuery } =
-  userApi;
+export const { useLoginMutation, useLogoutMutation } = userApi;

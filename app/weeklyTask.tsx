@@ -1,6 +1,5 @@
-// app/SkillTaskScreen.tsx
 import { useNavigation } from "@react-navigation/native";
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -13,25 +12,26 @@ import {
   View,
 } from "react-native";
 import IPhoneSeBottomBar from "../components/IPhoneSeBottomBar";
+import { useGetCoursesQuery } from "../redux/services/skillsApi";
 
 const { width } = Dimensions.get("window");
 
 // STATIC imports (must be static for Metro)
 const MODULE_ICON = require("../assets/Module.png");
 const MODULE_TIME_ICON = require("../assets/Module Time.png");
-const PREVIEW_ICON = require("../assets/Preview.png");
+const Previous_ICON = require("../assets/Previous Arrow.png");
 const INFO_BG = require("../assets/bg2.png");
 const SKILL_COMPLETION_ICON = require("../assets/Skill Task Completion.png");
 
 // Course images (Skill1..Skill6)
-const SKILL_IMAGES = [
-  require("../assets/Skill1.png"),
-  require("../assets/Skill2.png"),
-  require("../assets/Skill3.png"),
-  require("../assets/Skill4.png"),
-  require("../assets/Skill5.png"),
-  require("../assets/Skill6.png"),
-];
+const SKILL_IMAGE_MAP: Record<string, any> = {
+  Skill1: require("../assets/Skill1.png"),
+  Skill2: require("../assets/Skill2.png"),
+  Skill3: require("../assets/Skill3.png"),
+  Skill4: require("../assets/Skill4.png"),
+  Skill5: require("../assets/Skill5.png"),
+  Skill6: require("../assets/Skill6.png"),
+};
 
 type Course = {
   id: number;
@@ -42,56 +42,56 @@ type Course = {
   image?: any;
 };
 
-const COURSES: Course[] = [
-  {
-    id: 1,
-    title: "Everyday Electrical Fixes at Home",
-    modules: 15,
-    time: "4 Min 50 Sec",
-    price: "₹ 10/-",
-    image: SKILL_IMAGES[0],
-  },
-  {
-    id: 2,
-    title: "Everyday Plumbing Fixes at Home",
-    modules: 15,
-    time: "4 Min 50 Sec",
-    price: "₹ 10/-",
-    image: SKILL_IMAGES[1],
-  },
-  {
-    id: 3,
-    title: "Home Appliance Maintenance Hacks",
-    modules: 15,
-    time: "4 Min 50 Sec",
-    price: "₹ 10/-",
-    image: SKILL_IMAGES[2],
-  },
-  {
-    id: 4,
-    title: "Home Wall Care & Painting Essentials",
-    modules: 15,
-    time: "4 Min 50 Sec",
-    price: "₹ 10/-",
-    image: SKILL_IMAGES[3],
-  },
-  {
-    id: 5,
-    title: "Home Concrete & Tile Repairs",
-    modules: 10,
-    time: "3 Min",
-    price: "Free",
-    image: SKILL_IMAGES[4],
-  },
-  {
-    id: 6,
-    title: "Smartphone Hacks and Basic Repair",
-    modules: 15,
-    time: "4 Min 50 Sec",
-    price: "₹ 10/-",
-    image: SKILL_IMAGES[5],
-  },
-];
+// const COURSES: Course[] = [
+//   {
+//     id: 1,
+//     title: "Everyday Electrical Fixes at Home",
+//     modules: 15,
+//     time: "4 Min 50 Sec",
+//     price: "₹ 10/-",
+//     image: SKILL_IMAGES[0],
+//   },
+//   {
+//     id: 2,
+//     title: "Everyday Plumbing Fixes at Home",
+//     modules: 15,
+//     time: "4 Min 50 Sec",
+//     price: "₹ 10/-",
+//     image: SKILL_IMAGES[1],
+//   },
+//   {
+//     id: 3,
+//     title: "Home Appliance Maintenance Hacks",
+//     modules: 15,
+//     time: "4 Min 50 Sec",
+//     price: "₹ 10/-",
+//     image: SKILL_IMAGES[2],
+//   },
+//   {
+//     id: 4,
+//     title: "Home Wall Care & Painting Essentials",
+//     modules: 15,
+//     time: "4 Min 50 Sec",
+//     price: "₹ 10/-",
+//     image: SKILL_IMAGES[3],
+//   },
+//   {
+//     id: 5,
+//     title: "Home Concrete & Tile Repairs",
+//     modules: 10,
+//     time: "3 Min",
+//     price: "Free",
+//     image: SKILL_IMAGES[4],
+//   },
+//   {
+//     id: 6,
+//     title: "Smartphone Hacks and Basic Repair",
+//     modules: 15,
+//     time: "4 Min 50 Sec",
+//     price: "₹ 10/-",
+//     image: SKILL_IMAGES[5],
+//   },
+// ];
 
 function CourseMeta({ modules, time }: { modules: number; time: string }) {
   return (
@@ -120,18 +120,22 @@ function CourseMeta({ modules, time }: { modules: number; time: string }) {
   );
 }
 
-function CourseCard({ course }: { course: Course }) {
+function CourseCard({ course, index }: { course: Course; index: number }) {
   const navigation = useNavigation<any>();
 
   function onPress() {
     navigation.navigate("TaskDetail", { course });
   }
+
+  // set marginRight for left-column cards so two-per-row spacing works reliably
+  const isLeft = index % 2 === 0;
+  const cardStyle = [
+    styles.courseCard,
+    { marginRight: isLeft ? 12 : 0 }, // spacing between two columns
+  ];
+
   return (
-    <TouchableOpacity
-      activeOpacity={0.92}
-      style={styles.courseCard}
-      onPress={onPress}
-    >
+    <TouchableOpacity activeOpacity={0.92} style={cardStyle} onPress={onPress}>
       {/* Course image with thin border only */}
       <Image
         source={course.image}
@@ -149,9 +153,16 @@ function CourseCard({ course }: { course: Course }) {
 }
 
 export default function SkillTaskScreen() {
+  const { data: courses = [], isLoading } = useGetCoursesQuery();
+
   const [activeTab, setActiveTab] = useState<"home" | "wallet" | "profile">(
     "home"
   );
+  const navigation = useNavigation<any>();
+
+  useLayoutEffect(() => {
+    navigation.setOptions?.({ headerShown: false, headerLeft: () => null });
+  }, [navigation]);
 
   return (
     <View style={[styles.screen]}>
@@ -161,16 +172,45 @@ export default function SkillTaskScreen() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Simplified header: small preview image + single title "Skill Test" */}
-        <View style={styles.simpleHeader}>
-          <Image source={PREVIEW_ICON} style={styles.previewSmall} />
-          <Text style={styles.simpleHeaderTitle}>Skill Test</Text>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          {/* Back button */}
+          <TouchableOpacity
+            onPress={() => {
+              if (navigation.canGoBack && navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate("Home");
+              }
+            }}
+            style={styles.PreviousTouchable}
+            activeOpacity={0.8}
+          >
+            <Image source={Previous_ICON} style={styles.PreviousSmall} />
+          </TouchableOpacity>
+
+          {/* Left side (Skill Task + subtitle) */}
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>Skill Task</Text>
+            <Text style={styles.headerSubtitle}>
+              E-learning (Micro-Courses)
+            </Text>
+          </View>
+
+          {/* Right side (Weekly Task + progress count) */}
+          <View style={styles.headerRight}>
+            <Text style={styles.weeklyText}>Weekly Task</Text>
+
+            <View style={styles.counterBadge}>
+              <Text style={styles.counterText}>0/6</Text>
+            </View>
+          </View>
         </View>
 
         <ImageBackground
           source={INFO_BG}
           style={styles.infoCard}
-          imageStyle={{ borderRadius: 12 }}
+          imageStyle={styles.infoCardImage}
         >
           <View style={styles.infoLeft}>
             <Image
@@ -189,11 +229,25 @@ export default function SkillTaskScreen() {
           </View>
         </ImageBackground>
 
-        <Text style={styles.sectionTitle}>Courses</Text>
+        <Text style={styles.sectionTitle}>Skill Task</Text>
 
         <View style={styles.grid}>
-          {COURSES.map((c) => (
-            <CourseCard key={c.id} course={c} />
+          {/* {COURSES.map((c, i) => (
+            <CourseCard key={c.id} course={c} index={i} />
+          ))} */}
+          {courses.map((c, i) => (
+            <CourseCard
+              key={c.id}
+              index={i}
+              course={{
+                id: c.id,
+                title: c.title,
+                modules: c.modules,
+                time: c.duration,
+                price: c.price,
+                image: SKILL_IMAGE_MAP[c.image_key],
+              }}
+            />
           ))}
         </View>
 
@@ -206,60 +260,119 @@ export default function SkillTaskScreen() {
   );
 }
 
+const CARD_WIDTH = (width - 48) / 2 - 4;
+
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#12151D" },
   scroll: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 40 },
-
-  /* Simple header */
-  simpleHeader: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    paddingHorizontal: 4,
+    justifyContent: "space-between",
+    marginBottom: 14,
   },
-  previewSmall: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
+
+  headerLeft: {
+    flexDirection: "column",
+    marginLeft: 6,
+    flex: 1,
   },
-  simpleHeaderTitle: {
+
+  headerTitle: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 17,
     fontFamily: "Roboto-Bold",
-    marginLeft: 10,
+  },
+
+  headerSubtitle: {
+    color: "#bfc8d0",
+    fontSize: 12,
+    fontFamily: "Roboto-Regular",
+    marginTop: 2,
+  },
+
+  headerRight: {
+    alignItems: "flex-end",
+  },
+
+  weeklyText: {
+    color: "#A9C1FF",
+    fontSize: 13,
+    fontFamily: "Roboto-SemiBold",
+  },
+
+  counterBadge: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#CDF533",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  counterText: {
+    color: "#fff",
+    fontSize: 12,
+    fontFamily: "Roboto-Bold",
+  },
+
+  PreviousTouchable: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  PreviousSmall: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
   },
 
   infoCard: {
     width: "100%",
-    minHeight: 96,
-    borderRadius: 12,
+    minHeight: 110, // increased to fit larger icon cleanly
+    borderRadius: 10,
     flexDirection: "row",
-    padding: 14,
-    borderColor: "rgba(153,197,140,0.06)",
+    padding: 16,
+    borderColor: "rgba(153,197,140,0.10)",
     borderWidth: 1,
     marginBottom: 18,
     overflow: "hidden",
+
+    backgroundColor: "transparent", // ✅ remove background color completely
+  },
+  infoCardImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 12, // SAME radius as container
+    resizeMode: "cover", // ← **NO STRETCH**
   },
   infoLeft: {
-    width: 64,
+    width: 80, // ✅ increased space for bigger image
     alignItems: "center",
     justifyContent: "center",
     paddingRight: 12,
   },
   skillCompletionIcon: {
-    width: 56,
-    height: 56,
+    width: 80, // ✅ bigger icon
+    height: 80,
     borderRadius: 8,
   },
-  infoRight: { flex: 1, paddingLeft: 6 },
+  infoRight: {
+    flex: 1,
+    paddingLeft: 8,
+  },
   infoTitle: {
-    color: "#89939a",
+    color: "#b0c7c0",
     fontSize: 16,
     fontFamily: "Roboto-SemiBold",
-    marginBottom: 6,
+    marginBottom: 15,
   },
   infoDesc: {
-    color: "#d9e1e3",
+    color: "#e3ecec",
     fontSize: 13,
     lineHeight: 20,
     fontFamily: "Roboto-Regular",
@@ -276,18 +389,15 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: 12,
+    // spacing is handled per-card using marginRight
   },
 
   /* course card: NO border on card itself (per request) */
   courseCard: {
-    width: (width - 48) / 2 - 4,
-    // backgroundColor: "#0f1316",
+    width: CARD_WIDTH,
     borderRadius: 12,
     padding: 10,
     marginBottom: 18,
-    // no border here
     overflow: "hidden",
   },
 
@@ -336,19 +446,4 @@ const styles = StyleSheet.create({
     borderTopColor: "rgba(255,255,255,0.02)",
     justifyContent: "center",
   },
-  bottomNavInner: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    marginHorizontal: 12,
-  },
-  navItem: { alignItems: "center" },
-  navIconPlaceholder: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.02)",
-    marginBottom: 6,
-  },
-  navLabel: { color: "#bfc8d0", fontSize: 14, fontFamily: "Roboto-Regular" },
 });

@@ -14,7 +14,7 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const assets = {
-  PreviewIcon: require("../../assets/Preview.png"),
+  PreviousIcon: require("../../assets/Previous Arrow.png"),
   productImage: require("../../assets/CardShoe.png"),
   DeleteIcon: require("../../assets/Delete Cart.png"),
   dropdownIcon: require("../../assets/dropdown.png"),
@@ -24,8 +24,34 @@ const assets = {
 };
 
 export default function OrderSummaryScreen(): JSX.Element {
-  const [addrOpen, setAddrOpen] = useState(false);
+  const paymentOptions = [
+    { id: "phonepe", label: "PhonePe UPI", icon: assets.Phonepe },
+    {
+      id: "gpay",
+      label: "Google Pay",
+      icon: require("../../assets/placeholder.png"),
+    },
+    {
+      id: "amazon",
+      label: "Amazon Pay",
+      icon: require("../../assets/placeholder.png"),
+    },
+    { id: "upi", label: "UPI", icon: require("../../assets/placeholder.png") },
+    {
+      id: "credit",
+      label: "Credit Card",
+      icon: require("../../assets/placeholder.png"),
+    },
+    {
+      id: "debit",
+      label: "Debit Card",
+      icon: require("../../assets/placeholder.png"),
+    },
+  ];
+
+  const [selectedPayment, setSelectedPayment] = useState(paymentOptions[0]);
   const [payOpen, setPayOpen] = useState(false);
+  const [addrOpen, setAddrOpen] = useState(false);
   return (
     <ScrollView
       style={styles.screen}
@@ -37,7 +63,7 @@ export default function OrderSummaryScreen(): JSX.Element {
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
           <Image
-            source={assets.PreviewIcon}
+            source={assets.PreviousIcon}
             style={styles.headerIcon}
             resizeMode="contain"
           />
@@ -165,16 +191,17 @@ export default function OrderSummaryScreen(): JSX.Element {
         </View>
 
         {/* Address summary / details (toggle) */}
-        <View style={styles.addressContainer}>
-          <Text
-            numberOfLines={addrOpen ? undefined : 2}
-            style={styles.addressText}
-          >
-            John Doe H/no 23-256 1st cross 24th Main HSR Layout Sector 1
-            Bangalore Karnataka 560045
-          </Text>
 
-          {addrOpen && (
+        {addrOpen && (
+          <View style={styles.addressContainer}>
+            <Text
+              numberOfLines={addrOpen ? undefined : 2}
+              style={styles.addressText}
+            >
+              John Doe H/no 23-256 1st cross 24th Main HSR Layout Sector 1
+              Bangalore Karnataka 560045
+            </Text>
+
             <View style={styles.addressDetails}>
               <Text style={styles.addressDetailLine}>Receiver: John Doe</Text>
               <Text style={styles.addressDetailLine}>
@@ -185,21 +212,23 @@ export default function OrderSummaryScreen(): JSX.Element {
               </Text>
               {/* add more fields as required */}
             </View>
-          )}
-        </View>
+          </View>
+        )}
 
+        {/* Pay area inside the same card */}
         {/* Pay area inside the same card */}
         <View style={styles.payRow}>
           <View style={styles.payLeft}>
-            {/* PhonePe image with white square background */}
+            {/* Payment Icon Box */}
             <View style={styles.paymentIconBox}>
               <Image
-                source={assets.Phonepe}
+                source={selectedPayment.icon}
                 style={styles.paymentIcon}
                 resizeMode="contain"
               />
             </View>
 
+            {/* Text + Dropdown */}
             <View style={styles.payTextBlock}>
               <View style={styles.payTitleRow}>
                 <Text style={styles.payingViaLabel}>PAYING VIA</Text>
@@ -220,9 +249,11 @@ export default function OrderSummaryScreen(): JSX.Element {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.payMethod}>PhonePe UPI</Text>
+              <Text style={styles.payMethod}>{selectedPayment.label}</Text>
             </View>
           </View>
+
+          {/* Pay Button */}
           <TouchableOpacity
             activeOpacity={0.85}
             style={styles.payButtonWrapper}
@@ -238,7 +269,24 @@ export default function OrderSummaryScreen(): JSX.Element {
           </TouchableOpacity>
         </View>
 
-        <View style={{ height: 18 }} />
+        {/* ▼ Dropdown Menu */}
+        {payOpen && (
+          <View style={styles.dropdownMenu}>
+            {paymentOptions.map((opt) => (
+              <TouchableOpacity
+                key={opt.id}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedPayment(opt);
+                  setPayOpen(false);
+                }}
+              >
+                <Image source={opt.icon} style={styles.dropdownIconImg} />
+                <Text style={styles.dropdownItemLabel}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -282,7 +330,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     marginLeft: 16,
-    marginTop: 50,
+    marginTop: 30,
     marginBottom: 10,
     opacity: 0.95,
   },
@@ -513,87 +561,195 @@ const styles = StyleSheet.create({
   },
 
   /* payment row */
+  /* Payment Row */
   payRow: {
-    marginTop: 14,
-    width: "100%",
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
+    alignItems: "center",
+    marginTop: 10,
   },
+
   payLeft: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
   },
+
   paymentIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
+    width: 40,
+    height: 40,
     backgroundColor: "#fff",
+    borderRadius: 8,
+    justifyContent: "center",
     alignItems: "center",
-    justifyContent: "center",
     marginRight: 10,
-    overflow: "hidden",
   },
+
   paymentIcon: {
-    width: 32,
-    height: 32,
+    width: 26,
+    height: 26,
   },
+
   payTextBlock: {
-    flex: 1,
-    justifyContent: "center",
+    flexDirection: "column",
   },
+
   payTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
   },
+
+  payingViaLabel: {
+    color: "#999",
+    fontSize: 10,
+    marginRight: 6,
+  },
+
   payDropdownTouch: {
-    padding: 6,
-    marginLeft: 8,
+    padding: 4,
   },
+
   payDropdownIcon: {
     width: 12,
     height: 12,
-    tintColor: "rgba(255,255,255,0.8)",
   },
+
+  // dropdownOpen: {
+  //   transform: [{ rotate: "180deg" }],
+  // },
+
   payMethod: {
     color: "#fff",
-    fontSize: 13,
-    marginTop: 4,
+    fontSize: 14,
     fontWeight: "600",
+    marginTop: 2,
   },
+
+  /* Pay Button */
   payButtonWrapper: {
-    marginLeft: 12,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 6, // Android shadow
+    marginLeft: 10,
   },
 
   payButton: {
+    paddingVertical: 10,
     paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: 130,
+    borderRadius: 8,
   },
 
   payButtonText: {
-    color: "#12151d",
+    color: "#000",
     fontWeight: "700",
     fontSize: 14,
   },
 
-  payingViaLabel: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 11,
-    fontWeight: "700",
+  /* Dropdown List */
+  dropdownMenu: {
+    marginTop: 6,
+    backgroundColor: "#1A1D24",
+    borderRadius: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
   },
+
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+
+  dropdownIconImg: {
+    width: 22,
+    height: 22,
+    marginRight: 10,
+  },
+
+  dropdownItemLabel: {
+    color: "#fff",
+    fontSize: 14,
+  },
+
+  // payRow: {
+  //   marginTop: 14,
+  //   width: "100%",
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "space-between",
+  //   marginBottom: 24,
+  // },
+  // payLeft: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   flex: 1,
+  // },
+  // paymentIconBox: {
+  //   width: 44,
+  //   height: 44,
+  //   borderRadius: 8,
+  //   backgroundColor: "#fff",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  //   marginRight: 10,
+  //   overflow: "hidden",
+  // },
+  // paymentIcon: {
+  //   width: 32,
+  //   height: 32,
+  // },
+  // payTextBlock: {
+  //   flex: 1,
+  //   justifyContent: "center",
+  // },
+  // payTitleRow: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "flex-start",
+  // },
+  // payDropdownTouch: {
+  //   padding: 6,
+  //   marginLeft: 8,
+  // },
+  // payDropdownIcon: {
+  //   width: 12,
+  //   height: 12,
+  //   tintColor: "rgba(255,255,255,0.8)",
+  // },
+  // payMethod: {
+  //   color: "#fff",
+  //   fontSize: 13,
+  //   marginTop: 4,
+  //   fontWeight: "600",
+  // },
+  // payButtonWrapper: {
+  //   marginLeft: 12,
+  //   borderRadius: 10,
+  //   shadowColor: "#000",
+  //   shadowOpacity: 0.3,
+  //   shadowRadius: 6,
+  //   shadowOffset: { width: 0, height: 3 },
+  //   elevation: 6, // Android shadow
+  // },
+
+  // payButton: {
+  //   paddingHorizontal: 18,
+  //   paddingVertical: 12,
+  //   borderRadius: 10,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  //   minWidth: 130,
+  // },
+
+  // payButtonText: {
+  //   color: "#12151d",
+  //   fontWeight: "700",
+  //   fontSize: 14,
+  // },
+
+  // payingViaLabel: {
+  //   color: "rgba(255,255,255,0.8)",
+  //   fontSize: 11,
+  //   fontWeight: "700",
+  // },
 
   purpleDecor: {
     position: "absolute",

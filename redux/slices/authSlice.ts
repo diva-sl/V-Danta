@@ -1,20 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
-  token?: string | null;
+  token: string | null;
 }
 
-const initialState: AuthState = { token: null };
+const initialState: AuthState = {
+  token: null,
+};
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setToken: (s, a) => {
-      s.token = a.payload;
+    setToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
     },
-    clearToken: (s) => {
-      s.token = null;
+    clearToken: (state) => {
+      state.token = null;
     },
   },
 });

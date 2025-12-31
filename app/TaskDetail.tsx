@@ -1,11 +1,11 @@
-// app/TaskDetail.tsx  (replace existing file or paste the new sections)
+// app/TaskDetail.tsx
 import {
   NavigationProp,
   RouteProp,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useGetCourseVideosQuery } from "../redux/services/skillsApi";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const guidelineBaseWidth = 375;
@@ -32,6 +33,7 @@ type Course = {
   modules: number;
   time: string;
   price?: string;
+  image?: ImageSourcePropType;
 };
 type RootStackParamList = {
   TaskDetail: { course?: Course } | undefined;
@@ -55,19 +57,30 @@ export default function TaskDetailScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "TaskDetail">>();
 
+  // hide stack header (defensive runtime override)
+  useLayoutEffect(() => {
+    navigation.setOptions?.({ headerShown: false, headerLeft: () => null });
+  }, [navigation]);
+
   const defaultCourse: Course = {
     id: 1,
     title: "Everyday Electrical Fixes at Home",
     modules: 15,
     time: "4 Min 50 Sec",
     price: "₹ 10/-",
+    image: require("../assets/Skill1.png"),
   };
 
   const course: Course = route.params?.course ?? defaultCourse;
-  const curriculum = useMemo(
-    () => generateCurriculum(course.modules || 0),
-    [course.modules]
-  );
+  const { data: videos = [], isLoading } = useGetCourseVideosQuery(course.id);
+
+  const curriculum = videos.map((v: any, index: number) => ({
+    id: v.id,
+    title: v.title,
+    duration: v.duration,
+    status: index === 0 ? "watched" : "learn",
+    videoUrl: v.video_url,
+  }));
 
   // progress state (0..1) - currently simulated. Replace with real player progress.
   const [progress, setProgress] = useState(0.12); // example initial progress
@@ -103,7 +116,7 @@ export default function TaskDetailScreen() {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f1517" />
+      <StatusBar barStyle="light-content" backgroundColor="#12151D" />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -117,12 +130,23 @@ export default function TaskDetailScreen() {
                 onPress={() => navigation.goBack()}
                 style={styles.backBtn}
               >
-                <Text style={styles.backBtnTxt}>{"<"}</Text>
+                <Image
+                  source={require("../assets/Previous Arrow.png")}
+                  style={styles.backIcon}
+                />
               </TouchableOpacity>
             </View>
 
-            {/* big media placeholder (video frame) */}
-            <View style={styles.mediaPlaceholder} />
+            {/* Course image (fills area, not stretched) */}
+            {course.image ? (
+              <Image
+                source={course.image}
+                style={styles.mediaImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.mediaPlaceholder} />
+            )}
 
             {/* bottom player controls: start time - progress bar - end time - fullscreen */}
             <View style={styles.playerControls}>
@@ -143,10 +167,12 @@ export default function TaskDetailScreen() {
                 activeOpacity={0.8}
                 onPress={() => {
                   console.log("fullscreen pressed");
-                  // hook to real fullscreen action later
                 }}
               >
-                <Text style={styles.fullscreenIcon}>⤢</Text>
+                <Image
+                  source={require("../assets/expand.png")}
+                  style={styles.fullscreenImage}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -191,20 +217,6 @@ export default function TaskDetailScreen() {
             <Text style={styles.price}>{course.price}</Text>
           </View>
         </View>
-
-        {/* rest remains the same (meta, divider, curriculum, etc.) */}
-        {/* <View style={styles.metaRow}>
-          <View style={styles.metaLeft}>
-            <Image
-              source={MODULE_ICON}
-              style={styles.metaIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.metaText}>
-              <Text style={styles.metaBold}>{course.modules}</Text> Modules
-            </Text>
-          </View>
-        </View> */}
 
         <View style={styles.divider} />
 
@@ -283,34 +295,39 @@ const styles = StyleSheet.create({
   mediaArea: {
     width: "100%",
     height: normalize(260),
-    backgroundColor: "#0d1113",
+    backgroundColor: "transparent", // transparent per request
     borderRadius: 0,
     marginTop: normalize(0),
     overflow: "hidden",
-  },
-
-  mediaHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: normalize(10),
-    zIndex: 2,
-  },
-  backBtn: {
-    width: normalize(34),
-    height: normalize(34),
-    borderRadius: normalize(17),
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
     justifyContent: "center",
     alignItems: "center",
   },
-  backBtnTxt: { color: "#fff", fontSize: normalize(16) },
-  mediaTime: { color: "#fff", fontSize: normalize(12) },
 
+  /* image that fills media area nicely without stretching */
+  mediaImage: {
+    width: "100%",
+    height: "100%",
+    // keep aspect by using cover; Image resizeMode="cover" above
+  },
+
+  mediaHeader: {
+    position: "absolute",
+    top: normalize(10),
+    left: normalize(10),
+    right: normalize(10),
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    zIndex: 5,
+  },
+
+  backBtnTxt: { color: "#fff", fontSize: normalize(16) },
+
+  /* fallback placeholder (kept if no image) */
   mediaPlaceholder: {
     flex: 1,
     marginHorizontal: normalize(10),
-    backgroundColor: "#0b0f11",
+    // transparent background as requested
+    backgroundColor: "transparent",
     borderRadius: normalize(8),
   },
 
@@ -324,6 +341,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: normalize(12),
     gap: normalize(8),
+    // transparent background so no panel appears
   },
   playerTimeText: {
     color: "#dfe7e7",
@@ -334,24 +352,14 @@ const styles = StyleSheet.create({
   progressTrack: {
     height: normalize(6),
     borderRadius: normalize(6),
-    backgroundColor: "rgba(255,255,255,0.06)",
+    backgroundColor: "#D9D9D9",
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
     backgroundColor: "#CDF533",
   },
-  fullscreenBtn: {
-    marginLeft: normalize(8),
-    width: normalize(34),
-    height: normalize(34),
-    borderRadius: normalize(6),
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.06)",
-    backgroundColor: "#0d1113",
-  },
+
   fullscreenIcon: { color: "#dfe7e7", fontSize: normalize(14) },
 
   /* title row updated - module and duration inline */
@@ -478,6 +486,34 @@ const styles = StyleSheet.create({
     width: normalize(110),
     alignItems: "flex-end",
     justifyContent: "center",
+  },
+  backIcon: {
+    width: normalize(18),
+    height: normalize(18),
+    tintColor: "#fff", // optional
+  },
+  backBtn: {
+    width: normalize(34),
+    height: normalize(34),
+    borderRadius: normalize(17),
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(13,17,19,0.45)", // nicer translucent bg
+  },
+  fullscreenImage: {
+    width: normalize(36),
+    height: normalize(36),
+    tintColor: "#FFFFFF", // remove tint if your icon is already white
+    resizeMode: "contain",
+  },
+  fullscreenBtn: {
+    width: normalize(34),
+    height: normalize(34),
+    borderRadius: normalize(6),
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   learnBtn: { flexDirection: "row", alignItems: "center" },

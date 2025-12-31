@@ -5,7 +5,7 @@ export interface StepLog {
   id: number;
   userId: number;
   steps: number;
-  date: string; // ISO
+  date: string;
 }
 
 export const stepsApi = createApi({
@@ -17,21 +17,31 @@ export const stepsApi = createApi({
       query: () => ({ url: "/tracking/today", method: "GET" }),
       providesTags: ["Steps"],
     }),
+
     addSteps: builder.mutation<StepLog, { steps: number }>({
-      query: (body) => ({ url: "/tracking/add", method: "POST", data: body }),
+      query: (body) => ({
+        url: "/tracking/add",
+        method: "POST",
+        data: body,
+      }),
       invalidatesTags: ["Steps"],
     }),
-    getHistory: builder.query<StepLog[], { from?: string; to?: string } | void>(
-      {
-        query: (params) => ({ url: "/tracking/list", method: "GET", params }),
-        providesTags: ["Steps"],
-      }
-    ),
+
+    getSummary: builder.query<
+      any[],
+      { type: "day" | "week" | "month" | "year"; date: string }
+    >({
+      query: ({ type, date }) => ({
+        url: "/tracking/summary",
+        method: "GET",
+        params: { type, date },
+      }),
+    }),
   }),
 });
 
 export const {
   useGetTodayStepsQuery,
   useAddStepsMutation,
-  useGetHistoryQuery,
+  useGetSummaryQuery,
 } = stepsApi;

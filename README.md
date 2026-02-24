@@ -1,50 +1,150 @@
-# Welcome to your Expo app 👋
+# V-Danta — Health & Skill Development Mobile Application
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+V-Danta is a modern cross-platform mobile application focused on **wellness tracking, skill development, and digital commerce integration**.
 
-## Get started
+The app combines:
 
-1. Install dependencies
+- 🏃 Health monitoring (Step Tracking & Wellness)
+- 🎓 Online skill development courses
+- 🛍 Product selling & integrated commerce
+- 📊 Admin management & analytics
+- 🔐 Secure authentication & scalable backend
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 📱 Live Project Status
 
-   ```bash
-   npx expo start
-   ```
+Currently under active development.
 
-In the output, you'll find options to open the app in a
+Built using **React Native (Expo)** with a scalable architecture designed for future enterprise expansion.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Core Features
 
-## Get a fresh project
+### 🏃 Health & Activity Tracking
+- Daily step counter
+- Activity monitoring
+- Performance insights
+- Health dashboard
 
-When you're ready, run:
+### 🎓 Skill Development Courses
+- Structured learning modules
+- Course progress tracking
+- Certification-ready content
+- Video-based learning support
+
+### 🛍 Product & Commerce Module
+- Digital product listings
+- Secure checkout flow
+- User purchase history
+- Future payment gateway integration
+
+### 👨‍💼 Admin Panel (Developed Separately)
+- User management
+- Course management
+- Product control
+- Analytics dashboard
+- Revenue tracking
+- Role-based access control
+
+---
+
+## 🛠 Tech Stack
+
+### 📱 Mobile Application
+- React Native (Expo)
+- TypeScript
+- Redux Toolkit (State Management)
+- File-based routing
+- Custom hooks architecture
+- Modular component structure
+
+### 🌐 Backend (Developed by Divakaran)
+- REST API architecture
+- Authentication & Authorization
+- Secure database handling
+- Payment workflow ready
+- Scalable service design
+
+### 🧑‍💻 Admin Panel (Developed by Divakaran)
+- User control system
+- Course CRUD management
+- Commerce control
+- Activity & audit logs
+
+---
+
+
+## 📂 Project Structure
+
+
+app/
+components/
+redux/
+hooks/
+constants/
+assets/
+types/
+scripts/
+
+
+Architecture follows scalable modular separation for enterprise-level maintainability.
+
+---
+
+## 🎨 UI / UX Design
+
+Designed in **Figma** with a modern, minimal, and mobile-first approach.
+
+### UI/UX Designer:
+Rajesh (Figma Designer & Visual System Contributor)
+
+---
+
+## 👨‍💻 Development Credits
+
+### Lead Full Stack Developer:
+**Divakaran S (diva-sl)**  
+- Mobile App Development  
+- Backend Architecture  
+- API Development  
+- Admin Panel System  
+- Database & Logic Layer  
+- Application Architecture  
+
+GitHub: https://github.com/diva-sl  
+LinkedIn: https://linkedin.com/in/divakarans  
+
+### UI Designer:
+Rajesh  
+(Figma Interface & Visual Design)
+
+---
+
+## 🔒 Security & Architecture
+
+- Modular scalable architecture
+- Redux-based centralized state control
+- Type-safe TypeScript implementation
+- Backend-ready secure authentication system
+- Designed for future cloud scaling
+
+---
+
+## 📈 Vision
+
+V-Danta is designed to evolve into:
+
+- A holistic wellness ecosystem  
+- A digital learning marketplace  
+- A scalable SaaS-enabled mobile platform  
+- AI-integrated personalized coaching system  
+
+---
+
+## 🧪 Development Setup
 
 ```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+npm install
+npx expo start
